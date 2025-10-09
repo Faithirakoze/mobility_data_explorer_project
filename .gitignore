@@ -1,0 +1,11 @@
+#CSV files
+*.csv
+
+#Raw data files
+data/raw
+data/processed
+
+# Ignore temporary or cache files
+__pycache__/
+.env
+venv/
