@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mobility Data Explorer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">☰</span>
+          <h2>Mobility<br>Explorer</h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#metrics">Dashboard</a>
+          <a href="#visualizations">Visualizations</a>
+          <a href="#insights">Insights</a>
+          <a href="#data-table">Trip Table</a>
+        </nav>
+        <div class="sidebar-filters">
+          <h3>Quick Filters</h3>
+          <select id="sidebar-vendor-filter"><option value="">All Vendors</option></select>
+          <select id="sidebar-hour-filter"><option value="">All Hours</option></select>
+          <input type="number" id="sidebar-min-fare" placeholder="Min Fare">
+          <input type="number" id="sidebar-max-fare" placeholder="Max Fare">
+          <button id="sidebar-apply-filters">Apply</button>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header>
+          <h1>Mobility Data Explorer</h1>
+          <div id="date-range">
+            <label>From: <input type="date" id="start-date"></label>
+            <label>To: <input type="date" id="end-date"></label>
+            <button id="apply-filters">Apply</button>
+          </div>
+        </header>
+        <section id="filters">
+          <select id="vendor-filter"><option value="">All Vendors</option></select>
+          <select id="hour-filter"><option value="">All Hours</option></select>
+          <input type="number" id="min-fare" placeholder="Min Fare">
+          <input type="number" id="max-fare" placeholder="Max Fare">
+          <button id="reset-filters">Reset</button>
+        </section>
+        <section id="metrics">
+          <div class="metric-card" id="total-trips"></div>
+          <div class="metric-card" id="avg-fare"></div>
+          <div class="metric-card" id="avg-speed"></div>
+          <div class="metric-card" id="busiest-hour"></div>
+        </section>
+        <section id="visualizations">
+          <div id="chart-trips-by-hour"></div>
+          <div id="chart-fare-vs-distance"></div>
+          <div id="chart-trip-speed"></div>
+        </section>
+        <section id="insights">
+          <h2>Key Insights</h2>
+          <ul id="insight-list"></ul>
+        </section>
+        <section id="data-table">
+          <h2>Trip Records</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Pickup</th>
+                <th>Dropoff</th>
+                <th>Vendor</th>
+                <th>Fare</th>
+                <th>Distance (km)</th>
+                <th>Speed (km/h)</th>
+              </tr>
+            </thead>
+            <tbody id="trip-table-body"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
