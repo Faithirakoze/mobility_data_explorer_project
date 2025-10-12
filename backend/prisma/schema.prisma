@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Vendor {
+  vendorId Int     @id @map("vendor_id")
+  name     String?
+  trips    Trip[]
+
+  @@map("vendors")
+}
+
+model Trip {
+  id                String         @id
+  vendorId          Int            @map("vendor_id")
+  pickupDatetime    DateTime       @map("pickup_datetime")
+  dropoffDatetime   DateTime       @map("dropoff_datetime")
+  passengerCount    Int            @map("passenger_count")
+  pickupLongitude   Decimal        @map("pickup_longitude") @db.Decimal(10, 8)
+  pickupLatitude    Decimal        @map("pickup_latitude") @db.Decimal(11, 8)
+  dropoffLongitude  Decimal        @map("dropoff_longitude") @db.Decimal(10, 8)
+  dropoffLatitude   Decimal        @map("dropoff_latitude") @db.Decimal(11, 8)
+  storeAndFwdFlag   String?        @map("store_and_fwd_flag") @db.Char(1)
+  tripDuration      Int            @map("trip_duration")
+  
+  vendor            Vendor         @relation(fields: [vendorId], references: [vendorId])
+  analytics         TripAnalytics?
+
+  @@index([vendorId])
+  @@index([pickupDatetime])
+  @@map("trips")
+}
+
+model TripAnalytics {
+  id                 Int      @id @default(autoincrement())
+  tripId             String   @unique @map("trip_id")
+  pickupHour         String?  @map("pickup_hour")
+  pickupDayofweek    String?  @map("pickup_dayofweek")
+  tripDistanceKm     Decimal? @map("trip_distance_km") @db.Decimal(10, 2)
+  tripDurationHours  Decimal? @map("trip_duration_hours") @db.Decimal(10, 4)
+  tripSpeedKmh       Decimal? @map("trip_speed_kmh") @db.Decimal(10, 2)
+  
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  @@index([pickupHour])
+  @@index([pickupDayofweek])
+  @@map("trip_analytics")
+}
+

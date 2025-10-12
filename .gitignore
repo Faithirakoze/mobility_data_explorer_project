@@ -1,9 +1,8 @@
 #CSV files
 *.csv
 
-#Raw data files
-data/raw
-data/processed
+#node module
+*node_modules/
 
 # Ignore temporary or cache files
 __pycache__/
