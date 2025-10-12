@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const { rankTrips } = require('../algorithms/quicksort');
 
 exports.getAllTrips = async (req, res) => {
   try {
@@ -85,6 +86,28 @@ exports.deleteTrip = async (req, res) => {
     });
 
     res.json({ message: 'Trip deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.rankTrips = async (req, res) => {
+  try {
+    const sortBy = req.query.sortBy || 'distance';
+    const order = req.query.order || 'desc';
+    const limit = parseInt(req.query.limit) || 100;
+
+    const trips = await prisma.trip.findMany({
+      take: 1000,
+      include: {
+        vendor: true,
+        analytics: true
+      }
+    });
+
+    const rankedResults = rankTrips(trips, sortBy, order, limit);
+
+    res.json(rankedResults);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

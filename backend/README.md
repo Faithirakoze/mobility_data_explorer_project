@@ -286,6 +286,50 @@ GET /api/vendors/:id
 curl http://localhost:5000/api/vendors/1
 ```
 
+---
+
+#### 7. Rank Trips (Custom Algorithm)
+```http
+GET /api/trips/ranked
+```
+
+**Query Parameters:**
+- `sortBy` - Criteria: 'distance' | 'speed' | 'duration' | 'fare' (default: distance)
+- `order` - Order: 'asc' | 'desc' (default: desc)
+- `limit` - Number of results (default: 100)
+
+**Response:**
+```json
+{
+  "trips": [...],
+  "algorithm": "QuickSort",
+  "sortBy": "distance",
+  "order": "desc",
+  "stats": {
+    "totalTrips": 1000,
+    "comparisons": 8234,
+    "swaps": 2104,
+    "complexity": "O(n log n) average, O(n²) worst"
+  }
+}
+```
+
+**Use Case:** Identify longest/shortest trips, fastest/slowest trips using custom QuickSort algorithm
+
+**Examples:**
+```bash
+# Longest trips
+curl "http://localhost:5000/api/trips/ranked?sortBy=distance&order=desc&limit=10"
+
+# Fastest trips
+curl "http://localhost:5000/api/trips/ranked?sortBy=speed&order=desc&limit=10"
+
+# Shortest duration
+curl "http://localhost:5000/api/trips/ranked?sortBy=duration&order=asc&limit=10"
+```
+
+**Algorithm Details:** See [ALGORITHM_ANALYSIS.md](src/algorithms/ALGORITHM_ANALYSIS.md) for full complexity analysis and implementation details.
+
 ## Database Schema
 
 ### Tables
