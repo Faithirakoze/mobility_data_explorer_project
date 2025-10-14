@@ -60,17 +60,15 @@ const getMockTrips = () => {
 exports.getAllTrips = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100; // Increase default limit
+    const limit = parseInt(req.query.limit) || 100; 
     const skip = (page - 1) * limit;
 
     const where = {};
 
-    // Handle vendor filter (from frontend it comes as 'vendor', backend expects vendor_id)
     if (req.query.vendor || req.query.vendor_id) {
       where.vendorId = parseInt(req.query.vendor || req.query.vendor_id);
     }
 
-    // Handle date filters
     if (req.query.start_date && req.query.end_date) {
       where.pickupDatetime = {
         gte: new Date(req.query.start_date),
@@ -78,17 +76,14 @@ exports.getAllTrips = async (req, res) => {
       };
     }
 
-    // Handle hour filter
     if (req.query.hour) {
       const hour = parseInt(req.query.hour);
-      // We'll filter by hour using analytics table
       where.analytics = {
         ...(where.analytics || {}),
         pickupHour: hour.toString()
       };
     }
 
-    // Handle distance filter
     if (req.query.min_distance) {
       where.analytics = {
         ...(where.analytics || {}),
@@ -114,10 +109,8 @@ exports.getAllTrips = async (req, res) => {
       });
     } catch (dbError) {
       console.log('Database not available, using mock data');
-      // Use mock data when database is not available
       trips = getMockTrips();
       
-      // Apply basic filtering to mock data
       if (req.query.vendor) {
         const vendorId = parseInt(req.query.vendor);
         trips = trips.filter(trip => trip.vendorId === vendorId);
@@ -128,13 +121,10 @@ exports.getAllTrips = async (req, res) => {
         trips = trips.filter(trip => trip.analytics?.pickupHour === hour);
       }
       
-      // Apply pagination to mock data
       trips = trips.slice(skip, skip + limit);
     }
 
-    // Transform data to match frontend expectations
     const transformedTrips = trips.map(trip => {
-      // Calculate a mock fare based on distance and duration (since we don't have actual fare data)
       const baseFare = 2.50;
       const perKmRate = 1.80;
       const perMinuteRate = 0.35;
@@ -157,7 +147,6 @@ exports.getAllTrips = async (req, res) => {
       };
     });
 
-    // Apply fare filters if specified
     let filteredTrips = transformedTrips;
     if (req.query.min_fare || req.query.max_fare) {
       filteredTrips = transformedTrips.filter(trip => {
@@ -168,7 +157,6 @@ exports.getAllTrips = async (req, res) => {
       });
     }
 
-    // Return simple array for frontend (not wrapped in object)
     res.json(filteredTrips);
   } catch (error) {
     console.error('Error in getAllTrips:', error);
