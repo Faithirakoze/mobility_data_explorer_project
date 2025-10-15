@@ -164,27 +164,15 @@ dailyChart       // Chart.js instance (daily)
 - Modern web browser (Chrome, Firefox, Edge, Safari)
 - Backend API running on `http://localhost:5000`
 
-### Development Server
+### Running the Frontend
 
-**Option 1: Python**
 ```bash
 cd frontend
 python3 -m http.server 3000
 ```
 
-**Option 2: Node.js (http-server)**
-```bash
-npm install -g http-server
-cd frontend
-http-server -p 3000
-```
-
-**Option 3: VS Code Live Server**
-- Install Live Server extension
-- Right-click `index.html` → Open with Live Server
-
-### Access
 Open browser to: `http://localhost:3000`
+
 
 ## User Interface Guide
 
@@ -260,16 +248,8 @@ Open browser to: `http://localhost:3000`
 
 ## Browser Compatibility
 
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-
-**Required Features**
-- ES6 (Arrow functions, template literals, async/await)
-- Fetch API
-- CSS Grid & Flexbox
-- Canvas API (Chart.js)
+Works on all modern browsers (Chrome, Firefox, Safari, Edge).  
+Requires: ES6, Fetch API, CSS Grid/Flexbox, Canvas API.
 
 ## Troubleshooting
 
@@ -301,55 +281,5 @@ Open browser to: `http://localhost:3000`
 - Verify screen width is below 768px
 - Inspect CSS `.sidebar ul.active` rule
 
-## Future Enhancements
-
-### Planned Features
-- [ ] Map visualization with pickup/dropoff locations
-- [ ] Real-time trip tracking simulation
-- [ ] Export data as CSV/JSON
-- [ ] Comparison mode (multiple time periods)
-- [ ] Custom date range picker
-
-### Performance Improvements
-- [ ] Virtual scrolling for large datasets
-- [ ] Web Workers for data processing
-- [ ] Service Worker for offline support
-- [ ] Lazy load Chart.js library
-
-### UX Enhancements
-- [ ] Dark mode toggle
-- [ ] Customizable chart colors
-- [ ] Saved filter presets
-- [ ] Share dashboard via URL parameters
-
-## Code Quality Standards
-
-### JavaScript Conventions
-- **Naming**: camelCase for functions/variables
-- **Constants**: ALL_CAPS for configuration values
-- **Functions**: Single responsibility principle
-- **Error Handling**: Try-catch blocks for async operations
-
-### CSS Organization
-- **Structure**: Logical grouping (layout → components → utilities)
-- **Naming**: BEM-inspired class names
-- **Responsive**: Mobile-first media queries
-- **Performance**: Minimal selector specificity
-
-## Learning Outcomes
-
-This frontend demonstrates:
-1. **Vanilla JavaScript Proficiency**: No framework dependencies
-2. **API Integration**: RESTful consumption patterns
-3. **Data Visualization**: Multi-chart coordination
-4. **Responsive Design**: Mobile-first CSS strategies
-5. **Algorithm Understanding**: QuickSort performance analysis
-6. **User Experience**: Loading states, error handling, feedback
-
-## Credits
-
-- **Chart.js**: Data visualization library
-- **NYC TLC**: Dataset source
-- **Design Inspiration**: Modern dashboard UIs
 
 
