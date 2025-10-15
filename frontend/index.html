@@ -9,57 +9,144 @@
 <body>
   <div class="dashboard">
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <h2>Urban Mobility Data Explorer</h2>
-      <ul>
-        <li><a href="#" id="all-trips-link">All Trips</a></li>
-        <li><a href="#" id="vendors-link">Vendors</a></li>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Urban Mobility Explorer</h2>
+        <button class="menu-toggle" id="menuToggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+      <ul id="sidebarMenu">
+        <li><a href="#" class="active" id="dashboard-link">Dashboard</a></li>
+        <li><a href="#" id="trips-link">Trips</a></li>
       </ul>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-      <h1>Dashboard</h1>
 
-      <!-- Filters -->
-      <div class="filters">
-        <select id="vendorFilter">
-          <option value="">All Vendors</option>
-        </select>
-        <input type="date" id="dayFilter">
-        <input type="month" id="monthFilter">
-        <input type="number" id="hourFilter" min="0" max="23" placeholder="Hour (0-23)">
-        <button id="applyFilters">Apply Filters</button>
+      <!-- Dashboard Section -->
+      <div id="dashboard-section">
+        <h1>Dashboard</h1>
+
+        <!-- Stats from /api/trips/analyze -->
+        <div class="stats">
+          <div class="card" id="total-trips">Total Trips: 0</div>
+          <div class="card" id="avg-duration">Avg Duration: 0 sec</div>
+          <div class="card" id="avg-passengers">Avg Passengers: 0</div>
+        </div>
+
+        <!-- Hourly Distribution Chart from /api/trips/analyze -->
+        <h2>Hourly Trip Distribution</h2>
+        <canvas id="hourlyChart" style="height: 400px;"></canvas>
+        <div class="insight-box">
+          <p id="hourly-insight"></p>
+        </div>
+
+        <!-- Daily Distribution Chart from /api/trips/analyze -->
+        <h2>Daily Trip Distribution</h2>
+        <canvas id="dailyChart" style="height: 400px;"></canvas>
+        <div class="insight-box">
+          <p id="daily-insight"></p>
+        </div>
+
+        <!-- Vendors Table from /api/vendors -->
+        <h2>Vendors Overview</h2>
+        <table id="vendorsTable">
+          <thead>
+            <tr>
+              <th>Vendor ID</th>
+              <th>Vendor Name</th>
+              <th>Total Trips</th>
+              <th>Market Share %</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
 
-      <!-- Stats -->
-      <div class="stats">
-        <div class="card" id="total-trips">Total Trips: 0</div>
-        <div class="card" id="total-passengers">Total Passengers: 0</div>
+      <!-- Trips Section (Hidden by default) -->
+      <div id="trips-section" style="display: none;">
+        <h1>All Trips</h1>
+
+        <!-- Custom Algorithm Section from /api/trips/ranked -->
+        <div class="section-card">
+          <h2>Top Ranked Trips (Custom QuickSort Algorithm)</h2>
+          <div class="filters">
+            <select id="sortByFilter">
+              <option value="distance">Distance</option>
+              <option value="speed">Speed</option>
+              <option value="duration">Duration</option>
+            </select>
+            <select id="orderFilter">
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+            <input type="number" id="limitFilter" value="10" min="1" max="100" placeholder="Limit">
+            <button id="applyRankingBtn">Get Ranked Trips</button>
+          </div>
+          <div id="algorithm-stats"></div>
+          <div class="table-container">
+            <table id="rankedTripsTable">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Trip ID</th>
+                  <th>Vendor</th>
+                  <th>Distance (km)</th>
+                  <th>Speed (km/h)</th>
+                  <th>Duration (sec)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Filters for /api/trips -->
+        <div class="section-card">
+          <h2>Filter Trips</h2>
+          <div class="filters">
+            <select id="vendorFilter">
+              <option value="">All Vendors</option>
+            </select>
+            <input type="date" id="startDateFilter" placeholder="Start Date">
+            <input type="date" id="endDateFilter" placeholder="End Date">
+            <input type="number" id="minDistanceFilter" min="0" step="0.1" placeholder="Min Distance (km)">
+            <button id="applyFilters">Apply Filters</button>
+            <button id="clearFilters">Clear Filters</button>
+          </div>
+        </div>
+
+        <!-- Trips Table from /api/trips -->
+        <div class="section-card">
+          <h2>Trip Records</h2>
+          <div class="table-container">
+            <table id="tripsTable">
+              <thead>
+                <tr>
+                  <th>Trip ID</th>
+                  <th>Vendor</th>
+                  <th>Distance (km)</th>
+                  <th>Speed (km/h)</th>
+                  <th>Duration (sec)</th>
+                  <th>Passengers</th>
+                  <th>Pickup Time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button id="prev">Prev</button>
+            <span id="page-numbers"></span>
+            <button id="next">Next</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Chart -->
-      <canvas id="tripsChart"></canvas>
-
-      <!-- Table -->
-      <table id="tripsTable">
-        <thead>
-          <tr>
-            <th>Trip ID</th>
-            <th>Vendor</th>
-            <th>Distance (km)</th>
-            <th>Speed (km/h)</th>
-            <th>Passengers</th>
-            <th>Pickup Time</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="pagination">
-        <button id="prev">Prev</button>
-        <span id="page-numbers"></span>
-        <button id="next">Next</button>
-      </div>
     </main>
   </div>
 

@@ -40,15 +40,25 @@ async function fetchTrips(filters = {}) {
 
     if (filters.vendor && t.vendorId.toString() !== filters.vendor) match = false;
 
-    if (filters.day) {
-      const tripDate = new Date(t.pickupTime).toISOString().slice(0,10);
-      if (tripDate !== filters.day) match = false;
+    if (filters.day && t.pickupTime) {
+      const dateObj = new Date(t.pickupTime);
+      if (!isNaN(dateObj)) {
+        const tripDate = dateObj.toISOString().slice(0, 10);
+        if (tripDate !== filters.day) match = false;
+      } else {
+        match = false;
     }
+  }
 
-    if (filters.month) {
-      const tripMonth = new Date(t.pickupTime).toISOString().slice(0,7);
-      if (tripMonth !== filters.month) match = false;
+    if (filters.month && t.pickupTime) {
+      const dateObj = new Date(t.pickupTime);
+      if (!isNaN(dateObj)) {
+        const tripMonth = dateObj.toISOString().slice(0, 7);
+        if (tripMonth !== filters.month) match = false;
+      } else {
+        match = false;
     }
+  }
 
     if (filters.hour !== undefined && filters.hour !== "") {
       const tripHour = new Date(t.pickupTime).getHours();
