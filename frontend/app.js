@@ -1,155 +1,233 @@
+// app.js
+const apiBase = "http://localhost:5000/api";
 
-const BASE_URL = 'http://localhost:5000/api';
+const totalTripsEl = document.getElementById("total-trips");
+const totalPassengersEl = document.getElementById("total-passengers");
+const tripsTableBody = document.querySelector("#tripsTable tbody");
+const tripsChartEl = document.getElementById("tripsChart").getContext("2d");
 
-const vendorFilter = document.getElementById('vendor-filter');
-const hourFilter = document.getElementById('hour-filter');
-const sidebarVendorFilter = document.getElementById('sidebar-vendor-filter');
-const sidebarHourFilter = document.getElementById('sidebar-hour-filter');
-const applyFiltersBtn = document.getElementById('apply-filters');
-const sidebarApplyBtn = document.getElementById('sidebar-apply-filters');
-const resetFiltersBtn = document.getElementById('reset-filters');
+const vendorFilterEl = document.getElementById("vendorFilter");
+const dayFilterEl = document.getElementById("dayFilter");
+const monthFilterEl = document.getElementById("monthFilter");
+const hourFilterEl = document.getElementById("hourFilter");
+const applyFiltersBtn = document.getElementById("applyFilters");
 
-const totalTripsEl = document.getElementById('total-trips');
-const avgFareEl = document.getElementById('avg-fare');
-const avgSpeedEl = document.getElementById('avg-speed');
-const busiestHourEl = document.getElementById('busiest-hour');
-const tripTableBody = document.getElementById('trip-table-body');
-const insightList = document.getElementById('insight-list');
+let tripsChart;
 
-// FETCH & POPULATE FILTER OPTIONS
+// Fetch vendors for filter dropdown
 async function fetchVendors() {
-  try {
-    const response = await fetch(`${BASE_URL}/vendors`);
-    if (!response.ok) throw new Error('Failed to fetch vendors');
-    const vendors = await response.json();
-
-    [vendorFilter, sidebarVendorFilter].forEach(select => {
-      select.innerHTML = `<option value="">All Vendors</option>`;
-      vendors.forEach(vendor => {
-        const option = document.createElement('option');
-        option.value = vendor.vendorId;
-        option.textContent = vendor.name || `Vendor ${vendor.vendorId}`;
-        select.appendChild(option);
-      });
-    });
-  } catch (error) {
-    console.error('Error loading vendors:', error);
-  }
-}
-
-function populateHourFilters() {
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  [hourFilter, sidebarHourFilter].forEach(select => {
-    select.innerHTML = `<option value="">All Hours</option>`;
-    hours.forEach(hour => {
-      const option = document.createElement('option');
-      option.value = hour;
-      option.textContent = `${hour}:00`;
-      select.appendChild(option);
-    });
+  const res = await fetch(`${apiBase}/vendors`);
+  const vendors = await res.json();
+  vendors.forEach(v => {
+    const option = document.createElement("option");
+    option.value = v.vendorId;
+    option.textContent = v.name;
+    vendorFilterEl.appendChild(option);
   });
 }
 
-// FETCH TRIP DATA
+// Fetch trips and apply filters
 async function fetchTrips(filters = {}) {
-  try {
-    const params = new URLSearchParams(filters);
-    const response = await fetch(`${BASE_URL}/trips?${params.toString()}`);
-    if (!response.ok) throw new Error('Failed to fetch trips');
-    const trips = await response.json();
+  let url = `${apiBase}/trips`;
+  const res = await fetch(url);
+  let trips = await res.json();
 
-    updateMetrics(trips);
-    renderTripTable(trips);
-    generateInsights(trips);
+  if (!Array.isArray(trips)) return;
 
-  } catch (error) {
-    console.error('Error fetching trips:', error);
-  }
-}
+  // Apply filters
+  trips = trips.filter(t => {
+    let match = true;
 
-// RENDER FUNCTIONS
-function updateMetrics(trips) {
+    if (filters.vendor && t.vendorId.toString() !== filters.vendor) match = false;
+
+    if (filters.day) {
+      const tripDate = new Date(t.pickupTime).toISOString().slice(0,10);
+      if (tripDate !== filters.day) match = false;
+    }
+
+    if (filters.month) {
+      const tripMonth = new Date(t.pickupTime).toISOString().slice(0,7);
+      if (tripMonth !== filters.month) match = false;
+    }
+
+    if (filters.hour !== undefined && filters.hour !== "") {
+      const tripHour = new Date(t.pickupTime).getHours();
+      if (tripHour !== parseInt(filters.hour)) match = false;
+    }
+
+    return match;
+  });
+
+  // Stats
   const totalTrips = trips.length;
-  const avgFare = (trips.reduce((sum, t) => sum + (t.fare_amount || 0), 0) / totalTrips) || 0;
-  const avgSpeed = (trips.reduce((sum, t) => sum + (t.avg_speed || 0), 0) / totalTrips) || 0;
-
-  const hourCount = trips.reduce((acc, t) => {
-    const hour = new Date(t.pickup_datetime).getHours();
-    acc[hour] = (acc[hour] || 0) + 1;
-    return acc;
-  }, {});
-  const busiestHour = Object.entries(hourCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+  const totalPassengers = trips.reduce((sum, t) => sum + (t.passengers || 0), 0);
 
   totalTripsEl.textContent = `Total Trips: ${totalTrips}`;
-  avgFareEl.textContent = `Average Fare: $${avgFare.toFixed(2)}`;
-  avgSpeedEl.textContent = `Average Speed: ${avgSpeed.toFixed(1)} km/h`;
-  busiestHourEl.textContent = `Busiest Hour: ${busiestHour}:00`;
-}
+  totalPassengersEl.textContent = `Total Passengers: ${totalPassengers}`;
 
-function renderTripTable(trips) {
-  tripTableBody.innerHTML = '';
-  trips.forEach(trip => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${trip.pickup_datetime}</td>
-      <td>${trip.dropoff_datetime}</td>
-      <td>${trip.vendor_id || 'N/A'}</td>
-      <td>${trip.fare_amount?.toFixed(2) || 'N/A'}</td>
-      <td>${trip.distance_km?.toFixed(2) || 'N/A'}</td>
-      <td>${trip.avg_speed?.toFixed(2) || 'N/A'}</td>
-    `;
-    tripTableBody.appendChild(row);
+  // Populate table
+  tripsTableBody.innerHTML = trips.map(t => `
+    <tr>
+      <td>${t.id}</td>
+      <td>${t.vendorId}</td>
+      <td>${t.distance || 0}</td>
+      <td>${t.speed || 0}</td>
+      <td>${t.passengers || 0}</td>
+      <td>${new Date(t.pickupTime).toLocaleString()}</td>
+    </tr>
+  `).join("");
+
+  // Chart: trips by hour
+  const hours = Array(24).fill(0);
+  trips.forEach(t => {
+    const h = new Date(t.pickupTime).getHours();
+    hours[h]++;
+  });
+
+  if (tripsChart) tripsChart.destroy();
+  tripsChart = new Chart(tripsChartEl, {
+    type: 'bar',
+    data: {
+      labels: Array.from({length: 24}, (_, i) => i + ":00"),
+      datasets: [{
+        label: 'Trips per Hour',
+        data: hours,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
-function generateInsights(trips) {
-  insightList.innerHTML = '';
+// Initialize
+fetchVendors();
+fetchTrips();
 
-  if (trips.length === 0) {
-    insightList.innerHTML = '<li>No data available for selected filters.</li>';
-    return;
-  }
-
-  const totalFare = trips.reduce((sum, t) => sum + (t.fare_amount || 0), 0);
-  const longestTrip = trips.reduce((a, b) => (a.distance_km > b.distance_km ? a : b));
-  const fastestTrip = trips.reduce((a, b) => (a.avg_speed > b.avg_speed ? a : b));
-
-  const insights = [
-    `Total revenue: $${totalFare.toFixed(2)}`,
-    `Longest trip distance: ${longestTrip.distance_km.toFixed(2)} km`,
-    `Fastest trip speed: ${fastestTrip.avg_speed.toFixed(2)} km/h`,
-  ];
-
-  insights.forEach(text => {
-    const li = document.createElement('li');
-    li.textContent = text;
-    insightList.appendChild(li);
-  });
-}
-
-// FILTER HANDLERS
-function gatherFilters() {
-  return {
-    vendor: vendorFilter.value || sidebarVendorFilter.value || '',
-    hour: hourFilter.value || sidebarHourFilter.value || '',
-    min_fare: document.getElementById('min-fare').value || document.getElementById('sidebar-min-fare').value || '',
-    max_fare: document.getElementById('max-fare').value || document.getElementById('sidebar-max-fare').value || '',
-    start_date: document.getElementById('start-date').value || '',
-    end_date: document.getElementById('end-date').value || ''
+// Apply filters
+applyFiltersBtn.addEventListener("click", () => {
+  const filters = {
+    vendor: vendorFilterEl.value,
+    day: dayFilterEl.value,
+    month: monthFilterEl.value,
+    hour: hourFilterEl.value
   };
-}
-
-applyFiltersBtn.addEventListener('click', () => fetchTrips(gatherFilters()));
-sidebarApplyBtn.addEventListener('click', () => fetchTrips(gatherFilters()));
-
-resetFiltersBtn.addEventListener('click', () => {
-  [vendorFilter, hourFilter, sidebarVendorFilter, sidebarHourFilter].forEach(s => s.value = '');
-  document.querySelectorAll('input[type="number"], input[type="date"]').forEach(i => i.value = '');
-  fetchTrips();
+  fetchTrips(filters);
 });
 
-(async function init() {
-  populateHourFilters();
-  await fetchVendors();
-  await fetchTrips();
-})();
+// Pagination variables
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const pageNumbersEl = document.getElementById('page-numbers');
+
+let currentPage = 1;
+const rowsPerPage = 10; // adjust as needed
+let currentTrips = []; // will store filtered trips
+
+function renderTablePage(page) {
+  tripsTableBody.innerHTML = '';
+  const start = (page - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageRows = currentTrips.slice(start, end);
+
+  pageRows.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.id}</td>
+      <td>${t.vendorId}</td>
+      <td>${t.distance || 0}</td>
+      <td>${t.speed || 0}</td>
+      <td>${t.passengers || 0}</td>
+      <td>${new Date(t.pickupTime).toLocaleString()}</td>
+    `;
+    tripsTableBody.appendChild(tr);
+  });
+
+  renderPageNumbers();
+  prevBtn.disabled = page === 1;
+  nextBtn.disabled = page === Math.ceil(currentTrips.length / rowsPerPage);
+}
+
+function renderPageNumbers() {
+  pageNumbersEl.innerHTML = '';
+  const totalPages = Math.ceil(currentTrips.length / rowsPerPage);
+  for (let i = 1; i <= totalPages; i++) {
+    const span = document.createElement('span');
+    span.textContent = i;
+    span.className = i === currentPage ? 'active' : '';
+    span.addEventListener('click', () => {
+      currentPage = i;
+      renderTablePage(currentPage);
+    });
+    pageNumbersEl.appendChild(span);
+  }
+}
+
+// Prev/Next buttons
+prevBtn.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderTablePage(currentPage);
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  const totalPages = Math.ceil(currentTrips.length / rowsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    renderTablePage(currentPage);
+  }
+});
+
+// Update fetchTrips to store filtered trips
+async function fetchTrips(filters = {}) {
+  let url = `${apiBase}/trips`;
+  const res = await fetch(url);
+  let trips = await res.json();
+
+  if (!Array.isArray(trips)) return;
+
+  // Apply filters
+  trips = trips.filter(t => {
+    let match = true;
+    if (filters.vendor && t.vendorId.toString() !== filters.vendor) match = false;
+    if (filters.day) {
+      const tripDate = new Date(t.pickupTime).toISOString().slice(0,10);
+      if (tripDate !== filters.day) match = false;
+    }
+    if (filters.month) {
+      const tripMonth = new Date(t.pickupTime).toISOString().slice(0,7);
+      if (tripMonth !== filters.month) match = false;
+    }
+    if (filters.hour !== undefined && filters.hour !== "") {
+      const tripHour = new Date(t.pickupTime).getHours();
+      if (tripHour !== parseInt(filters.hour)) match = false;
+    }
+    return match;
+  });
+
+  // Stats
+  totalTripsEl.textContent = `Total Trips: ${trips.length}`;
+  totalPassengersEl.textContent = `Total Passengers: ${trips.reduce((sum, t) => sum + (t.passengers || 0), 0)}`;
+
+  // Store filtered trips for pagination
+  currentTrips = trips;
+  currentPage = 1;
+  renderTablePage(currentPage);
+
+  // Chart: trips by hour
+  const hours = Array(24).fill(0);
+  trips.forEach(t => hours[new Date(t.pickupTime).getHours()]++);
+  if (tripsChart) tripsChart.destroy();
+  tripsChart = new Chart(tripsChartEl, {
+    type: 'bar',
+    data: {
+      labels: Array.from({length: 24}, (_, i) => i + ":00"),
+      datasets: [{ label: 'Trips per Hour', data: hours, backgroundColor: 'rgba(75, 192, 192, 0.6)' }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+}
+

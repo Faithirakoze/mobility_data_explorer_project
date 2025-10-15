@@ -2,80 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mobility Data Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urban Mobility Data Explorer</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-  <body>
-    <div class="layout">
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <span class="sidebar-title">☰</span>
-          <h2>Mobility<br>Explorer</h2>
-        </div>
-        <nav class="sidebar-nav">
-          <a href="#metrics">Dashboard</a>
-          <a href="#visualizations">Visualizations</a>
-          <a href="#insights">Insights</a>
-          <a href="#data-table">Trip Table</a>
-        </nav>
-        <div class="sidebar-filters">
-          <h3>Quick Filters</h3>
-          <select id="sidebar-vendor-filter"><option value="">All Vendors</option></select>
-          <select id="sidebar-hour-filter"><option value="">All Hours</option></select>
-          <input type="number" id="sidebar-min-fare" placeholder="Min Fare">
-          <input type="number" id="sidebar-max-fare" placeholder="Max Fare">
-          <button id="sidebar-apply-filters">Apply</button>
-        </div>
-      </aside>
-      <main class="main-content">
-        <header>
-          <h1>Mobility Data Explorer</h1>
-          <div id="date-range">
-            <label>From: <input type="date" id="start-date"></label>
-            <label>To: <input type="date" id="end-date"></label>
-            <button id="apply-filters">Apply</button>
-          </div>
-        </header>
-        <section id="filters">
-          <select id="vendor-filter"><option value="">All Vendors</option></select>
-          <select id="hour-filter"><option value="">All Hours</option></select>
-          <input type="number" id="min-fare" placeholder="Min Fare">
-          <input type="number" id="max-fare" placeholder="Max Fare">
-          <button id="reset-filters">Reset</button>
-        </section>
-        <section id="metrics">
-          <div class="metric-card" id="total-trips"></div>
-          <div class="metric-card" id="avg-fare"></div>
-          <div class="metric-card" id="avg-speed"></div>
-          <div class="metric-card" id="busiest-hour"></div>
-        </section>
-        <section id="visualizations">
-          <div id="chart-trips-by-hour"></div>
-          <div id="chart-fare-vs-distance"></div>
-          <div id="chart-trip-speed"></div>
-        </section>
-        <section id="insights">
-          <h2>Key Insights</h2>
-          <ul id="insight-list"></ul>
-        </section>
-        <section id="data-table">
-          <h2>Trip Records</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Pickup</th>
-                <th>Dropoff</th>
-                <th>Vendor</th>
-                <th>Fare</th>
-                <th>Distance (km)</th>
-                <th>Speed (km/h)</th>
-              </tr>
-            </thead>
-            <tbody id="trip-table-body"></tbody>
-          </table>
-        </section>
-      </main>
-    </div>
-    <script src="app.js"></script>
-  </body>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Urban Mobility Data Explorer</h2>
+      <ul>
+        <li><a href="#" id="all-trips-link">All Trips</a></li>
+        <li><a href="#" id="vendors-link">Vendors</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <h1>Dashboard</h1>
+
+      <!-- Filters -->
+      <div class="filters">
+        <select id="vendorFilter">
+          <option value="">All Vendors</option>
+        </select>
+        <input type="date" id="dayFilter">
+        <input type="month" id="monthFilter">
+        <input type="number" id="hourFilter" min="0" max="23" placeholder="Hour (0-23)">
+        <button id="applyFilters">Apply Filters</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="card" id="total-trips">Total Trips: 0</div>
+        <div class="card" id="total-passengers">Total Passengers: 0</div>
+      </div>
+
+      <!-- Chart -->
+      <canvas id="tripsChart"></canvas>
+
+      <!-- Table -->
+      <table id="tripsTable">
+        <thead>
+          <tr>
+            <th>Trip ID</th>
+            <th>Vendor</th>
+            <th>Distance (km)</th>
+            <th>Speed (km/h)</th>
+            <th>Passengers</th>
+            <th>Pickup Time</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="pagination">
+        <button id="prev">Prev</button>
+        <span id="page-numbers"></span>
+        <button id="next">Next</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+</body>
 </html>
